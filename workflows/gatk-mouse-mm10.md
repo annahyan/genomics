@@ -27,20 +27,32 @@ for vcf in $(ls -1 vcf_chr_*.vcf.gz) ; do
   rm -fv $vcf
 done
 ```
+Adding #contig lines to the header, so that GATK GatherVcfs can process them.
+
+```bash
+for vcf in $(ls -1 vcf_chr_*.vcf) ; do
+  vcf_dict=${vcf%.vcf}"_dict.vcf"
+  echo $vcf
+  gatk UpdateVCFSequenceDictionary -V $vcf --source-dictionary genome.dict  --output $vcf_dict
+  
+  rm -fv $vcf
+done
+```
 
 Combine all dbSNP VCF files into one:
 
 ```bash
 # generate parameter string containing all VCF files
 vcf_file_string=""
-for vcf in $(ls -1 vcf_chr_*.vcf) ; do
-  vcf_file_string="$vcf_file_string -V $vcf"
+for vcf in $(ls -1 vcf_chr_*_dict.vcf) ; do
+  vcf_file_string="$vcf_file_string -I $vcf"
 done
-echo $vcf_file_string
+echo $vcf_file_string > arguments_file #this didn't really work
 
-# concatenate VCF files
-java -Xms16G -Xmx16G -cp ${gatk_path}/GenomeAnalysisTK.jar org.broadinstitute.gatk.tools.CatVariants \
--R genome.fa $vcf_file_string -out dbsnp.vcf
+# concatenate VCF files 
+# gatk 4.0.1.2-java-1.8 version didn't really work. 4.2.0 worked instead
+gatk GatherVcfs -I vcf_chr_10_dict.vcf -I vcf_chr_11_dict.vcf -I vcf_chr_12_dict.vcf -I vcf_chr_13_dict.vcf -I vcf_chr_14_dict.vcf -I vcf_chr_15_dict.vcf -I vcf_chr_16_dict.vcf -I vcf_chr_17_dict.vcf -I vcf_chr_18_dict.vcf -I vcf_chr_19_dict.vcf -I vcf_chr_1_dict.vcf -I vcf_chr_2_dict.vcf -I vcf_chr_3_dict.vcf -I vcf_chr_4_dict.vcf -I vcf_chr_5_dict.vcf -I vcf_chr_6_dict.vcf -I vcf_chr_7_dict.vcf -I vcf_chr_8_dict.vcf -I vcf_chr_9_dict.vcf -I vcf_chr_AltOnly_dict.vcf -I vcf_chr_MT_dict.vcf -I vcf_chr_Multi_dict.vcf -I vcf_chr_Un_dict.vcf -I vcf_chr_X_dict.vcf -I vcf_chr_Y_dict.vcf -O dbsnp.vcf 
+
 ```
 
 More recent dbSNP releases include a merged `00-All.vcf.gz` file in addition to the separate chromosome files.
