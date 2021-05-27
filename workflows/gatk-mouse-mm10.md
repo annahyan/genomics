@@ -88,6 +88,7 @@ SD=genome.dict \
 I=mgp.v5.indels.pass.chr.vcf \
 O=mgp.v5.indels.pass.chr.sort.vcf
 rm -fv mgp.v5.indels.pass.chr.sort.vcf.idx
+gatk IndexFeatureFile -I cohort.vcf.gz
 ```
 
 Additional info:
